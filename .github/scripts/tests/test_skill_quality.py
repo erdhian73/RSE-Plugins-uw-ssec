@@ -97,7 +97,9 @@ def test_skill_dir_without_skill_md_is_not_selected(sq, repo):
     assert selected(sq, repo, base, head) == []
 
 
-@pytest.mark.parametrize("gate", [".github/workflows/skill-quality-check.yml", ".github/scripts/skill-quality.py"])
+@pytest.mark.parametrize("gate", [
+    ".github/workflows/skill-quality-check.yml", ".github/scripts/skill-quality.py", "pixi.toml", "pixi.lock",
+])
 def test_changing_the_gate_selects_every_skill(sq, repo, gate):
     base, head = commit(repo, {gate: "changed\n"})
     assert selected(sq, repo, base, head) == [
