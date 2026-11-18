@@ -352,6 +352,9 @@ def rechunk_zarr(
                     source_array.serializer,
                     *source_array.compressors,
                 )
+                # Dimension names are array metadata, not attributes, so
+                # `attrs.update()` below does not carry them.
+                create_kwargs['dimension_names'] = source_array.metadata.dimension_names
                 if source_array.shards is not None:
                     logger.warning(
                         f"Source is sharded (shards {source_array.shards}, inner "
