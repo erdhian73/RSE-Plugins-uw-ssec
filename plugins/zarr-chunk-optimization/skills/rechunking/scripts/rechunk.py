@@ -344,7 +344,21 @@ def rechunk_zarr(
             create_kwargs = {}
             if source_format == 3:
                 # Zarr v3 has no single `compressor`; carry the codec pipeline.
-                create_kwargs['codecs'] = source_array.metadata.codecs
+                # Rebuild it from filters, serializer and compressors: on a
+                # sharded source these are the inner codecs, so the old
+                # sharding codec (and its inner chunk shape) is not copied.
+                create_kwargs['codecs'] = (
+                    *source_array.filters,
+                    source_array.serializer,
+                    *source_array.compressors,
+                )
+                if source_array.shards is not None:
+                    logger.warning(
+                        f"Source is sharded (shards {source_array.shards}, inner "
+                        f"chunks {source_array.chunks}); writing unsharded output "
+                        f"with chunks {target_chunks}. To shard the result, "
+                        f"rewrite it with zarr.create_array(..., shards=...)."
+                    )
             else:
                 create_kwargs['compressor'] = source_array.compressor
                 create_kwargs['order'] = source_array.order
