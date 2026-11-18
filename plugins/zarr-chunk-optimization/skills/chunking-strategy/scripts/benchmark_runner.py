@@ -115,6 +115,10 @@ def open_dataset(dataset_path: str, chunks: str = 'auto') -> xr.Dataset:
         names = getattr(node.metadata, 'dimension_names', None)
         dims = list(names) if names else [f'dim_{i}' for i in range(node.ndim)]
         name = dataset_path.rstrip('/').rsplit('/', 1)[-1].replace('.zarr', '') or 'data'
+        # A variable named like one of its dimensions becomes a coordinate,
+        # leaving no data variable to benchmark (e.g. `time.zarr` over `time`).
+        while name in dims:
+            name += '_data'
         return xr.Dataset({name: xr.DataArray(da.from_array(node, chunks=node.chunks), dims=dims)})
     return xr.open_zarr(dataset_path, chunks=chunks)
 
